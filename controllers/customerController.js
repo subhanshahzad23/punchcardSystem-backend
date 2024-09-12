@@ -1,6 +1,9 @@
 const Customer = require('../models/Customer');
 const Package = require('../models/Package');
 
+const asyncHandler = require('express-async-handler');
+
+
 
 // Assign a package to an existing customer
 const assignPackageToCustomer = async (req, res) => {
@@ -39,6 +42,11 @@ const assignPackageToCustomer = async (req, res) => {
     }
 };
 
+
+const formatPhoneNumber = (phone) => {
+    return phone.replace(/\D/g, '');  // Remove all non-numeric characters
+};
+
 // Enroll a new customer
 const enrollCustomer = async (req, res) => {
     const { name, phone, email, packages } = req.body;
@@ -46,10 +54,12 @@ const enrollCustomer = async (req, res) => {
     console.log('Incoming request:', { name, phone, email, packages });  // Debugging
 
     try {
+        const formattedPhone = formatPhoneNumber(phone); // Format the phone number
+
         // Create a new customer with the package information
         const newCustomer = new Customer({
             name,
-            phone,
+            phone: formattedPhone, // Store formatted phone number
             email,
             packages,
         });
@@ -73,7 +83,9 @@ const searchCustomerByPhone = async (req, res) => {
     const { phone } = req.query;
 
     try {
-        const customer = await Customer.findOne({ phone })
+        const formattedPhone = formatPhoneNumber(phone); // Format the phone number
+
+        const customer = await Customer.findOne({ phone:formattedPhone })
             .populate('packages.packageId')  // Populate package details
             .exec();  // Make sure you're executing the query
 
@@ -114,6 +126,64 @@ const punchRedemption = async (req, res) => {
     }
 };
 
+// Function to update a customer
+const updateCustomer = asyncHandler(async (req, res) => {
+    const { customerId } = req.params;
+    const { name, phone, email } = req.body;
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+        res.status(404);
+        throw new Error('Customer not found');
+    }
+
+    // Update the customer details
+    customer.name = name || customer.name;
+    customer.phone = phone ? formatPhoneNumber(phone) : customer.phone;
+    customer.email = email || customer.email;
+
+    const updatedCustomer = await customer.save();
+    res.status(200).json(updatedCustomer);
+});
+
+// Function to delete a customer
+// Function to delete a customer
+const deleteCustomer = asyncHandler(async (req, res) => {
+    const { customerId } = req.params;
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+        res.status(404);
+        throw new Error('Customer not found');
+    }
+
+    await Customer.deleteOne({ _id: customerId }); // Correct method for deletion
+    res.status(200).json({ message: 'Customer deleted successfully' });
+});
+
+// Function to remove a package from the customer's package list
+const deleteCustomerPackage = asyncHandler(async (req, res) => {
+    const { customerId, packageId } = req.params;
+
+    const customer = await Customer.findById(customerId);
+
+    if (!customer) {
+        res.status(404);
+        throw new Error('Customer not found');
+    }
+
+    // Remove the package from the customer's package array
+    customer.packages = customer.packages.filter(pkg => pkg.packageId.toString() !== packageId);
+
+    const updatedCustomer = await customer.save();
+    res.status(200).json(updatedCustomer);
+});
+
+
+
+
 
 
 // Export all functions at once
@@ -122,4 +192,7 @@ module.exports = {
     assignPackageToCustomer,
     searchCustomerByPhone,
     punchRedemption,
+    updateCustomer,
+    deleteCustomer,
+    deleteCustomerPackage
 };
