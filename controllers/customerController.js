@@ -6,39 +6,35 @@ const asyncHandler = require('express-async-handler');
 
 
 // Assign a package to an existing customer
+// Assign a package to a customer and set expiration
 const assignPackageToCustomer = async (req, res) => {
     const { customerId, packageId } = req.body;
 
     try {
-        const selectedPackage = await Package.findById(packageId);
-
-        if (!selectedPackage) {
-            return res.status(404).json({ message: 'Package not found' });
-        }
-
         const customer = await Customer.findById(customerId);
+        const packageToAssign = await Package.findById(packageId);
 
-        if (!customer) {
-            return res.status(404).json({ message: 'Customer not found' });
+        if (!customer || !packageToAssign) {
+            return res.status(404).json({ message: 'Customer or Package not found' });
         }
 
-        // Prepare the new package data
-        const newPackageData = {
-            packageId: selectedPackage._id,
-            remainingRedemptions: selectedPackage.redemptions,
-            expiration: selectedPackage.redemptions === 0
-                ? new Date(new Date().setMonth(new Date().getMonth() + 1))  // Set expiration for unlimited packs
-                : null,  // No expiration for limited packs
-        };
+        // Set the expiration for monthly packages if it's not already set
+        let expiration = null;
+        if (packageToAssign.name.toLowerCase().includes('monthly')) {
+            expiration = new Date(new Date().setMonth(new Date().getMonth() + 1));
+        }
 
-        // Push the new package into the customer's package array
-        customer.packages.push(newPackageData);
+        // Add the package to the customer's package list
+        customer.packages.push({
+            packageId: packageToAssign._id,
+            expiration,
+            remainingRedemptions: packageToAssign.redemptions,
+        });
 
-        // Save the updated customer
         await customer.save();
-        res.status(200).json(customer);
+        res.status(200).json({ message: 'Package assigned successfully' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: 'Server error', error });
     }
 };
 

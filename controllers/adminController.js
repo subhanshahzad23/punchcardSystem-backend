@@ -35,7 +35,7 @@ const Admin = require('../models/admin');
 
 // Function to generate JWT token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '3h' });
 };
 
 // Admin login function
