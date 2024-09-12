@@ -9,11 +9,16 @@ const packageSchema = mongoose.Schema({
         type: Number,
         required: true,  // 0 for unlimited packages
     },
-    isUnlimited: {   // New field to distinguish between unlimited and number-based
+    isUnlimited: {   
         type: Boolean,
         default: false,  // False for number-based, true for unlimited
     },
+    expiration: {   // Add expiration field
+        type: Date,
+        default: null,  // It will be null for non-expiring packages
+    },
 });
+
 
 const Package = mongoose.model('Package', packageSchema);
 

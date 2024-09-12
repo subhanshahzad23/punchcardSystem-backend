@@ -8,7 +8,7 @@ const router = express.Router();
 // Route to create a new package
 router.post('/create', protect,createPackage);  // Only admins can create packages
 
-router.delete('/packages/:id', deletePackage);
+router.delete('/:id', deletePackage);  // No need to include `/packages` since it's already part of the base route
 
 
 // Route to get all packages
