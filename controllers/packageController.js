@@ -2,13 +2,14 @@ const Package = require('../models/Package');
 
 // Create a new package
 const createPackage = async (req, res) => {
-    const { name, expiration, redemptions, isUnlimited } = req.body;
+    const { name, redemptions, isUnlimited, duration, durationUnit } = req.body;
     try {
         const newPackage = new Package({
             name,
-            expiration: expiration || null,
             redemptions,
-            isUnlimited
+            isUnlimited,
+            duration: isUnlimited ? duration : null, // Only store duration if unlimited
+            durationUnit: isUnlimited ? durationUnit : null,
         });
         const savedPackage = await newPackage.save();
         res.status(201).json(savedPackage);

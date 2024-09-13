@@ -13,12 +13,20 @@ const packageSchema = mongoose.Schema({
         type: Boolean,
         default: false,  // False for number-based, true for unlimited
     },
-    expiration: {   // Add expiration field
+    duration: {   // Add duration field for custom expiration
+        type: Number,
+        default: null,
+    },
+    durationUnit: {   // Add unit for the duration (days, weeks, months)
+        type: String,
+        enum: ['days', 'weeks', 'months'],
+        default: 'months',
+    },
+    expiration: {   // For assigned packages, calculate this field dynamically
         type: Date,
-        default: null,  // It will be null for non-expiring packages
+        default: null,
     },
 });
-
 
 const Package = mongoose.model('Package', packageSchema);
 

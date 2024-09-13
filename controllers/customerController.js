@@ -18,13 +18,20 @@ const assignPackageToCustomer = async (req, res) => {
             return res.status(404).json({ message: 'Customer or Package not found' });
         }
 
-        // Set the expiration for monthly packages if it's not already set
+        // Calculate expiration based on the package's custom duration (days, weeks, months)
         let expiration = null;
-        if (packageToAssign.name.toLowerCase().includes('monthly')) {
-            expiration = new Date(new Date().setMonth(new Date().getMonth() + 1));
+        if (packageToAssign.isUnlimited && packageToAssign.duration && packageToAssign.durationUnit) {
+            const now = new Date();
+            if (packageToAssign.durationUnit === 'days') {
+                expiration = new Date(now.setDate(now.getDate() + packageToAssign.duration));
+            } else if (packageToAssign.durationUnit === 'weeks') {
+                expiration = new Date(now.setDate(now.getDate() + packageToAssign.duration * 7));
+            } else if (packageToAssign.durationUnit === 'months') {
+                expiration = new Date(now.setMonth(now.getMonth() + packageToAssign.duration));
+            }
         }
 
-        // Add the package to the customer's package list
+        // Add the package to the customer's package list with the calculated expiration
         customer.packages.push({
             packageId: packageToAssign._id,
             expiration,
