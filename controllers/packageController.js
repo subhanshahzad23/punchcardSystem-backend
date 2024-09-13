@@ -1,6 +1,8 @@
 const Package = require('../models/Package');
 
 // Create a new package
+
+// Create a new package
 const createPackage = async (req, res) => {
     const { name, redemptions, isUnlimited, duration, durationUnit } = req.body;
     try {
