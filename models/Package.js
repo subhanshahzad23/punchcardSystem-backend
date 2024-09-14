@@ -26,7 +26,7 @@ const packageSchema = mongoose.Schema({
         type: Date,
         default: null,
     },
-});
+}, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 const Package = mongoose.model('Package', packageSchema);
 
