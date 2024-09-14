@@ -31,11 +31,12 @@ const assignPackageToCustomer = async (req, res) => {
             }
         }
 
-        // Add the package to the customer's package list with the calculated expiration
+        // Add the package to the customer's package list with the assignedDate and calculated expiration
         customer.packages.push({
             packageId: packageToAssign._id,
             expiration,
             remainingRedemptions: packageToAssign.redemptions,
+            assignedDate: new Date(),  // Save the current date as assignedDate
         });
 
         await customer.save();

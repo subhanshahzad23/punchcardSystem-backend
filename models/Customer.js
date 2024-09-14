@@ -13,6 +13,7 @@ const customerSchema = new mongoose.Schema({
             },
             remainingRedemptions: { type: Number, required: true },
             expiration: { type: Date, required: false },
+            assignedDate: { type: Date, default: Date.now },  // New field for assigned date
         },
     ],
     punchHistory: [
