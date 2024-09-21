@@ -1,5 +1,5 @@
 const express = require('express');
-const { enrollCustomer, assignPackageToCustomer, searchCustomerByPhone, punchRedemption,updateCustomer,deleteCustomer,deleteCustomerPackage } = require('../controllers/customerController');
+const { enrollCustomer, assignPackageToCustomer, searchCustomerByPhone,updateCustomer,deleteCustomer,deleteCustomerPackage } = require('../controllers/customerController');
 const router = express.Router();
 // const { protectAdmin } = require('../controllers/adminController');
 const { protect } = require('../middleware/authMiddleware'); // Import the protect middleware
@@ -16,7 +16,6 @@ router.post('/assign-package',protect, assignPackageToCustomer);  // Only admins
 router.get('/search', searchCustomerByPhone);
 
 // Route to punch a redemption for a customer
-router.post('/punch-redemption',protect, punchRedemption);
 
 // Route to update a customer
 router.put('/:customerId', protect, updateCustomer);
@@ -25,6 +24,9 @@ router.put('/:customerId', protect, updateCustomer);
 router.delete('/:customerId', protect, deleteCustomer);
 
 router.delete('/:customerId/packages/:packageId', deleteCustomerPackage);
+
+
+
 
 
 

@@ -26,6 +26,12 @@ const packageSchema = mongoose.Schema({
         type: Date,
         default: null,
     },
+    beds: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Bed', // Reference the Bed model
+        }
+    ]
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 const Package = mongoose.model('Package', packageSchema);

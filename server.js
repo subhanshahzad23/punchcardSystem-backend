@@ -6,6 +6,8 @@ const packageRoutes = require('./routes/packageRoutes');
 const customerRoutes = require('./routes/customerRoutes');
 const redemptionRoutes = require('./routes/redemptionRoutes');
 const adminRoutes = require('./routes/adminRoutes');  // Add this to include the admin routes
+const tanningHistoryRoutes = require('./routes/tanningHistoryRoutes'); // Import the new route
+
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +31,15 @@ app.use('/api/packages', packageRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/redemption', redemptionRoutes);
 app.use('/api/admin', adminRoutes);  // Register the admin routes here
+
+const bedRoutes = require('./routes/bedRoutes');
+app.use('/api/beds', bedRoutes);
+
+
+app.use('/api/tanning-history', tanningHistoryRoutes); // Add the route
+
+
+
 
 
 

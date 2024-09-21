@@ -1,8 +1,6 @@
 const Package = require('../models/Package');
 
 // Create a new package
-
-// Create a new package
 const createPackage = async (req, res) => {
     const { name, redemptions, isUnlimited, duration, durationUnit } = req.body;
     try {
@@ -30,7 +28,17 @@ const getPackages = async (req, res) => {
     }
 };
 
+// Get packages for Bed Creation
+const getPackagesForBed = async (req, res) => {
+    try {
+        const packages = await Package.find({}, 'name'); // Fetch only the package name for bed creation
+        res.status(200).json(packages);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching packages for bed creation', error });
+    }
+};
 
+// Delete a package
 const deletePackage = async (req, res) => {
     try {
         const packageId = req.params.id;
@@ -44,4 +52,4 @@ const deletePackage = async (req, res) => {
     }
 };
 
-module.exports = { createPackage, getPackages,deletePackage };
+module.exports = { createPackage, getPackages, getPackagesForBed, deletePackage };
