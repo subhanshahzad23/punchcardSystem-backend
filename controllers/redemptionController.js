@@ -11,66 +11,58 @@ const punchRedemption = async (req, res) => {
 
     try {
         if (!mongoose.Types.ObjectId.isValid(customerId) || !mongoose.Types.ObjectId.isValid(packageId) || !mongoose.Types.ObjectId.isValid(bedId)) {
-            console.log('Invalid ID format');
             return res.status(400).json({ message: 'Invalid ID format' });
         }
 
         if (!consentSignature) {
-            console.log('Consent signature is missing');
             return res.status(400).json({ message: 'Consent signature is required' });
         }
 
         const customer = await Customer.findById(customerId).populate('packages.packageId');
         if (!customer) {
-            console.log('Customer not found');
             return res.status(404).json({ message: 'Customer not found' });
         }
 
         const customerPackage = customer.packages.find(pkg => pkg.packageId._id.equals(packageId));
         if (!customerPackage) {
-            console.log('Package not found for this customer');
             return res.status(404).json({ message: 'Package not found for this customer' });
-        }
-
-        console.log('Customer Package found:', customerPackage);
-
-        const pkg = customerPackage.packageId;
-
-        if (!pkg.isUnlimited && customerPackage.remainingRedemptions <= 0) {
-            console.log('No redemptions left for this package');
-            return res.status(400).json({ message: 'No redemptions left for this package' });
         }
 
         const bed = await Bed.findById(bedId).populate('packages');
         if (!bed) {
-            console.log('Bed not found');
             return res.status(404).json({ message: 'Bed not found' });
         }
 
         const isPackageAllowedOnBed = bed.packages.some(bedPkg => bedPkg._id.equals(packageId));
         if (!isPackageAllowedOnBed) {
-            console.log('This bed does not support the selected package');
             return res.status(400).json({ message: 'This bed does not support the selected package' });
         }
 
-        if (!pkg.isUnlimited) {
+        // Adjust redemptions if not unlimited
+        if (!customerPackage.packageId.isUnlimited && customerPackage.remainingRedemptions <= 0) {
+            return res.status(400).json({ message: 'No redemptions left for this package' });
+        }
+
+        if (!customerPackage.packageId.isUnlimited) {
             customerPackage.remainingRedemptions -= 1;
         }
 
-        console.log('Logging punch in punch history');
+        // Store signature data with type (check if it's an image or text)
+        const signatureType = consentSignature.startsWith('data:image') ? 'image' : 'text';
+
+        // Log punch in punch history
         customer.punchHistory.push({
-            packageId: pkg._id,
+            packageId: customerPackage.packageId._id,
             bedId: bed._id,
             date: new Date(),
             consentForm: {
                 signedAt: new Date(),
-                signature: consentSignature,
+                signature: consentSignature, // Base64 image or text-based signature
+                signatureType, // 'image' or 'text'
             },
         });
 
         await customer.save();
-        console.log('Customer after saving:', customer);
-
         return res.status(200).json({ message: 'Redemption successful', customer });
     } catch (error) {
         console.error('Error punching redemption:', error);

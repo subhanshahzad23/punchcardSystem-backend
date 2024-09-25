@@ -13,7 +13,7 @@ const customerSchema = new mongoose.Schema({
             },
             remainingRedemptions: { type: Number, required: true },
             expiration: { type: Date, required: false },
-            assignedDate: { type: Date, default: Date.now },  // When the package was assigned
+            assignedDate: { type: Date, default: Date.now },
         },
     ],
     punchHistory: [
@@ -25,17 +25,18 @@ const customerSchema = new mongoose.Schema({
             },
             bedId: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: 'Bed',  // Link the bed used during the punch
+                ref: 'Bed',
                 required: true,
             },
-            date: { type: Date, default: Date.now },  // Punch date
-            consentForm: {  // Store acknowledgment of consent
-                signedAt: { type: Date, default: Date.now },  // Date/Time when the consent was signed
-                signature: { type: String, required: true },  // Placeholder for the signature (could be an image or string)
+            date: { type: Date, default: Date.now },
+            consentForm: {
+                signedAt: { type: Date, default: Date.now },
+                signature: { type: String, required: true }, // Can be a base64 string (for images) or text
+                signatureType: { type: String, default: 'text' }, // New field to store signature type: 'text' or 'image'
             },
         },
     ],
-}, { timestamps: true });  // Automatically adds createdAt and updatedAt fields
+}, { timestamps: true });
 
 const Customer = mongoose.model('Customer', customerSchema);
 module.exports = Customer;
