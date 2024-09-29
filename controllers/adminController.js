@@ -42,7 +42,7 @@ const forgotPassword = async (req, res) => {
 
     // Send email with reset link (using nodemailer)
     // In forgotPassword function in the admin controller:
-    const resetUrl = `http://localhost:3000/reset-password/${resetToken}`; // This URL points to the frontend reset page
+    const resetUrl = `https://punchcard-frontend.vercel.app/reset-password/${resetToken}`; // This URL points to the frontend reset page
     const transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
