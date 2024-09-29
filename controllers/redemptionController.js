@@ -3,7 +3,8 @@ const Bed = require('../models/Bed');
 const Package = require('../models/Package');
 const mongoose = require('mongoose');
 
-// Punch Redemption with new flow
+// Punch Redemption with updated flow
+// Punch Redemption with updated flow
 const punchRedemption = async (req, res) => {
     const { customerId, packageId, bedId, consentSignature } = req.body;
 
@@ -26,21 +27,27 @@ const punchRedemption = async (req, res) => {
             return res.status(404).json({ message: 'Customer not found' });
         }
 
-        const customerPackage = customer.packages.find(pkg => pkg.packageId._id.equals(packageId));
-        if (!customerPackage) {
-            console.log('Package not found for this customer');
-            return res.status(404).json({ message: 'Package not found for this customer' });
-        }
+        // Find the active package for the customer
+        const customerPackage = customer.packages.find(pkg =>
+            pkg.packageId._id.equals(packageId) && pkg.status === 'active'
+        );
 
-        console.log('Customer Package found:', customerPackage);
+        if (!customerPackage) {
+            console.log('No active package found for this customer');
+            return res.status(404).json({ message: 'No active package found for this customer' });
+        }
 
         const pkg = customerPackage.packageId;
 
+        // Check if the package has any redemptions left (only for non-unlimited packages)
         if (!pkg.isUnlimited && customerPackage.remainingRedemptions <= 0) {
+            // Mark package as redeemed if redemptions are exhausted
+            customerPackage.status = 'redeemed';
             console.log('No redemptions left for this package');
             return res.status(400).json({ message: 'No redemptions left for this package' });
         }
 
+        // Find the bed and validate the package assignment
         const bed = await Bed.findById(bedId).populate('packages');
         if (!bed) {
             console.log('Bed not found');
@@ -53,8 +60,15 @@ const punchRedemption = async (req, res) => {
             return res.status(400).json({ message: 'This bed does not support the selected package' });
         }
 
+        // Deduct a redemption if not unlimited
         if (!pkg.isUnlimited) {
             customerPackage.remainingRedemptions -= 1;
+
+            // Update the package status to 'redeemed' if redemptions are exhausted
+            if (customerPackage.remainingRedemptions === 0) {
+                customerPackage.status = 'redeemed';
+                console.log('Package fully redeemed');
+            }
         }
 
         console.log('Logging punch in punch history');
@@ -77,6 +91,7 @@ const punchRedemption = async (req, res) => {
         return res.status(500).json({ message: 'Server Error' });
     }
 };
+
 
 // Revert Redemption remains unchanged
 const revertRedemption = async (req, res) => {
@@ -105,6 +120,7 @@ const revertRedemption = async (req, res) => {
         customer.punchHistory.splice(punchIndex, 1);
         if (!customerPackage.packageId.isUnlimited) {
             customerPackage.remainingRedemptions += 1;
+            customerPackage.status = 'active'; // Reactivate package if redemptions were restored
         }
 
         await customer.save();

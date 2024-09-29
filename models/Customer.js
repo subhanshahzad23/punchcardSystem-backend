@@ -14,6 +14,11 @@ const customerSchema = new mongoose.Schema({
             remainingRedemptions: { type: Number, required: true },
             expiration: { type: Date, required: false },
             assignedDate: { type: Date, default: Date.now },
+            status: {
+                type: String,
+                enum: ['unused', 'active', 'redeemed', 'expired'], // Track the package state
+                default: 'unused',
+            }, // New status field to categorize the package
         },
     ],
     punchHistory: [
@@ -32,7 +37,7 @@ const customerSchema = new mongoose.Schema({
             consentForm: {
                 signedAt: { type: Date, default: Date.now },
                 signature: { type: String, required: true }, // Can be a base64 string (for images) or text
-                signatureType: { type: String, default: 'text' }, // New field to store signature type: 'text' or 'image'
+                signatureType: { type: String, default: 'text' }, // Field to store signature type: 'text' or 'image'
             },
         },
     ],

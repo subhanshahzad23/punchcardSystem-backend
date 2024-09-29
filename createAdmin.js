@@ -24,9 +24,10 @@ const resetAdminData = async () => {
 
         // Create a new admin user
         const username = 'admin'; // Customize the admin username
+        const email = 'taftsquare@gmail.com'; // New admin email
         const password = 'admin123'; // Customize the admin password
 
-        const admin = new Admin({ username, password });
+        const admin = new Admin({ username, email, password });
         await admin.save();
 
         console.log('New admin user created successfully');

@@ -31,7 +31,12 @@ const packageSchema = mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Bed', // Reference the Bed model
         }
-    ]
+    ],
+    status: {
+        type: String,
+        enum: ['active', 'used', 'expired', 'deleted'],
+        default: 'active',  // New packages are active by default
+    }
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt
 
 const Package = mongoose.model('Package', packageSchema);
