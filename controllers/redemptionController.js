@@ -4,7 +4,6 @@ const Package = require('../models/Package');
 const mongoose = require('mongoose');
 
 // Punch Redemption with updated flow
-// Punch Redemption with updated flow
 const punchRedemption = async (req, res) => {
     const { customerId, packageId, bedId, consentSignature } = req.body;
 
@@ -29,12 +28,12 @@ const punchRedemption = async (req, res) => {
 
         // Find the active package for the customer
         const customerPackage = customer.packages.find(pkg =>
-            pkg.packageId._id.equals(packageId) && pkg.status === 'active'
+            pkg.packageId._id.equals(packageId) && (pkg.status === 'active' || pkg.status === 'unused')
         );
 
         if (!customerPackage) {
-            console.log('No active package found for this customer');
-            return res.status(404).json({ message: 'No active package found for this customer' });
+            console.log('No active or unused package found for this customer');
+            return res.status(404).json({ message: 'No active or unused package found for this customer' });
         }
 
         const pkg = customerPackage.packageId;
@@ -92,7 +91,6 @@ const punchRedemption = async (req, res) => {
     }
 };
 
-
 // Revert Redemption remains unchanged
 const revertRedemption = async (req, res) => {
     const { customerId, packageId, punchId } = req.body;
@@ -109,6 +107,7 @@ const revertRedemption = async (req, res) => {
         const customerPackage = customer.packages.find(pkg => pkg.packageId.equals(packageId));
         if (!customerPackage) {
             console.log('Package not found for this customer');
+            return res.status(404).json({ message: 'Package not found for this customer' });
         }
 
         const punchIndex = customer.punchHistory.findIndex(punch => punch._id.toString() === punchId);
@@ -120,7 +119,13 @@ const revertRedemption = async (req, res) => {
         customer.punchHistory.splice(punchIndex, 1);
         if (!customerPackage.packageId.isUnlimited) {
             customerPackage.remainingRedemptions += 1;
-            customerPackage.status = 'active'; // Reactivate package if redemptions were restored
+
+            // If redemptions were restored, set the package status to 'unused' if applicable
+            if (customerPackage.remainingRedemptions > 0) {
+                customerPackage.status = 'unused';
+            } else {
+                customerPackage.status = 'active'; // Reactivate package if redemptions were restored
+            }
         }
 
         await customer.save();
